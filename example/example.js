@@ -7,16 +7,5 @@ var onTickerChanged = function(){console.log("ticker changed listener");};
 
 function onConnect(){
   coinfloor.watchTicker("XBT", "GBP", true, function(){});
-  // coinfloor.onTickerChanged = onTickerChanged;
   coinfloor.addEventListener("TickerChanged", onTickerChanged);
 };
-
-
-
-// coinfloor.watchTicker("XBT", "GBP", true, function(){});
-
-// coinfloor.getTicker(function(err, res){
-//     if(err) throw(err);
-//
-//     console.log(res);
-// });

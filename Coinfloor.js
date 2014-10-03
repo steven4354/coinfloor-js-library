@@ -3,6 +3,7 @@
 	var ecdsa = require('ecdsa');
 	var crypto = require('crypto');
 	var sr = require('secure-random');
+	var CoinKey = require('coinkey');
 
 	var assetCodes = {
 		XBT: 63488,
@@ -21,38 +22,35 @@
 			this.password = password;
 			this.api_key = api_key;
 
-			//set up websocket connection
-			ws.on('open', function(){
-				var msg = JSON.parse(data);
-				var nonce = msg.nonce;
+			/*
+			 * set up websocket connection
+			 */
+			ws.on('open', function(data){
 				console.log('websocket connected to: ' + url);
-				authenticate(user_id, password, api_key, nonce, function(){console.log("authenticated");})
 				onConnect();
+			});
+
+			/*
+			 * On each message call the relevant event handler
+			 */
+			ws.on('message', function (data, flags) {
+				var msg = JSON.parse(data);
+				console.log(msg);
+
+				//if it is the welcome message then call authenticate function
+				if(String(msg.notice).indexOf("Welcome") > -1){
+					authenticate(user_id, password, api_key, msg.nonce, function(){console.log("authenticated");})
+				}
+
+				var handler = eventHandlers[msg.notice];
+				if(handler != null){
+					handler(msg);
+				}
 			});
 		}
 
-		/*
-		 * add a listener for a message notice, to be called when this
-		 * message is received
-		 */
-		Coinfloor.prototype.addEventListener = function(notice, handler){
-			eventHandlers[notice] = handler;
-		}
-
-		/*
-		 * On each message call the relevant event handler
-		 */
-		ws.on('message', function (data, flags) {
-			var msg = JSON.parse(data);
-			console.log(msg);
-			var handler = eventHandlers[msg.notice];
-			if(handler != null){
-				handler(msg);
-			}
-		});
-
 		function _do_request(request, callback){
-			ws.send(JSON.stringify(request));
+			ws.send(JSON.stringify(request), callback);
 		};
 
 		/*
@@ -60,24 +58,40 @@
 		 * and passphrase.
 		 */
 		function authenticate(user_id, password, api_key, server_nonce, callback) {
-			// var packed_user_id = String.fromCharCode(0, 0, 0, 0, this.user_id >> 24 & 0xFF, this.user_id >> 16 & 0xFF, this.user_id >> 8 & 0xFF, this.user_id & 0xFF);
-			// var client_nonce = sr.randomBuffer(16);
-			//
-			// //create random private key
-			// var privateKey = sr.randomBuffer(16);
-			// var ck = new CoinKey(privateKey, true); // true => compressed public key / addresses
-			//
-			// var msg = new Buffer("hello world!", 'utf8');
-			// var shaMsg = crypto.createHash('sha256').update(msg).digest();
-			// var signature = ecdsa.sign(shaMsg, privateKey);
-			// var isValid = ecdsa.verify(shaMsg, signature, ck.publicKey);
-			// console.log(isValid); //true
+			console.log("server nonce = " + server_nonce);
+
+			var packed_user_id = String.fromCharCode(0, 0, 0, 0, this.user_id >> 24 & 0xFF, this.user_id >> 16 & 0xFF, this.user_id >> 8 & 0xFF, this.user_id & 0xFF);
+			var client_nonce = sr.randomBuffer(16);
+
+			//create random private key
+			var privateKey = sr.randomBuffer(32);
+			var ck = new CoinKey(privateKey, true); // true => compressed public key / addresses
+
+			var msg = server_nonce;
+			var shaMsg = crypto.createHash('sha256').update(msg).digest();
+			var signature = ecdsa.sign(shaMsg, privateKey);
+			var isValid = ecdsa.verify(shaMsg, signature, ck.publicKey);
+			console.log(isValid); //true
 			// console.log(ck);
 
 			_do_request({
-				method: "Authenticate"
-			}, callback);
+	        "tag": 1,
+	        "method": "Authenticate",
+	        "user_id": user_id,
+	        "cookie": api_key,
+	        "nonce": client_nonce,
+	        "signature": [ ck.x, ck.y ]
+	    }, callback);
+
 		};
+
+		/*
+		* add a listener for a message notice, to be called when this
+		* message is received
+		*/
+		Coinfloor.prototype.addEventListener = function(notice, handler){
+			eventHandlers[notice] = handler;
+		}
 
 		/*
 		 * Retrieves all available balances of the authenticated user.
