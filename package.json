@@ -1,0 +1,13 @@
+{
+  "name": "coinfloor-js-library",
+  "private": false,
+  "version": "0.0.1",
+  "description": "coinfloor Bitcoin exchange wrapper",
+  "dependencies": {
+    "websocket": "",
+    "ecdsa": "",
+    "crypto": "",
+    "secure-random": "",
+    "coinkey": ""
+  }
+}
