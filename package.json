@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "description": "coinfloor Bitcoin exchange wrapper",
   "dependencies": {
-    "websocket": "",
+    "socket.io-client": "",
     "ecdsa": "",
     "crypto": "",
     "secure-random": "",
