@@ -60,28 +60,28 @@
 		function authenticate(user_id, password, api_key, server_nonce, callback) {
 			console.log("server nonce = " + server_nonce);
 
-			var packed_user_id = String.fromCharCode(0, 0, 0, 0, this.user_id >> 24 & 0xFF, this.user_id >> 16 & 0xFF, this.user_id >> 8 & 0xFF, this.user_id & 0xFF);
-			var client_nonce = sr.randomBuffer(16);
-
-			//create random private key
-			var privateKey = sr.randomBuffer(32);
-			var ck = new CoinKey(privateKey, true); // true => compressed public key / addresses
-
-			var msg = server_nonce;
-			var shaMsg = crypto.createHash('sha256').update(msg).digest();
-			var signature = ecdsa.sign(shaMsg, privateKey);
-			var isValid = ecdsa.verify(shaMsg, signature, ck.publicKey);
-			console.log(isValid); //true
-			// console.log(ck);
-
-			_do_request({
-	        "tag": 1,
-	        "method": "Authenticate",
-	        "user_id": user_id,
-	        "cookie": api_key,
-	        "nonce": client_nonce,
-	        "signature": [ ck.x, ck.y ]
-	    }, callback);
+			// var packed_user_id = String.fromCharCode(0, 0, 0, 0, this.user_id >> 24 & 0xFF, this.user_id >> 16 & 0xFF, this.user_id >> 8 & 0xFF, this.user_id & 0xFF);
+			// var client_nonce = sr.randomBuffer(16);
+			//
+			// //create random private key
+			// var privateKey = sr.randomBuffer(32);
+			// var ck = new CoinKey(privateKey, true); // true => compressed public key / addresses
+			//
+			// var msg = server_nonce;
+			// var shaMsg = crypto.createHash('sha256').update(msg).digest();
+			// var signature = ecdsa.sign(shaMsg, privateKey);
+			// var isValid = ecdsa.verify(shaMsg, signature, ck.publicKey);
+			// console.log(isValid); //true
+			// // console.log(ck);
+			//
+			// _do_request({
+	    //     "tag": 1,
+	    //     "method": "Authenticate",
+	    //     "user_id": user_id,
+	    //     "cookie": api_key,
+	    //     "nonce": client_nonce,
+	    //     "signature": [ ck.x, ck.y ]
+	    // }, callback);
 
 		};
 
