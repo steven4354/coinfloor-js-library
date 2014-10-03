@@ -13,32 +13,35 @@
 
 	var ws = new SocketClient(url);
 
+	var eventHandlers = Object();
+
 	module.exports = Coinfloor = (function(){
-		function Coinfloor(user_id, password, api_key){
+		function Coinfloor(user_id, password, api_key, onConnect){
 			this.user_id = user_id;
 			this.password = password;
 			this.api_key = api_key;
-			// this.url = "ws://api.coinfloor.co.uk/";
 
-
+			//set up websocket connection
+			ws.on('open', function(){
+				var msg = JSON.parse(data);
+				var nonce = msg.nonce;
+				console.log('websocket connected to: ' + url);
+				authenticate(user_id, password, api_key, nonce, function(){console.log("authenticated");})
+				onConnect();
+			});
 		}
 
-		//set up websocket connection
-		ws.on('open', function(){
-			console.log('websocket connected to: ' + url);
+		/*
+		 * add a listener for a message notice, to be called when this
+		 * message is received
+		 */
+		Coinfloor.prototype.addEventListener = function(notice, handler){
+			eventHandlers[notice] = handler;
+		}
 
-			/**************/
-			var request = {
-				method: "WatchTicker",
-				base: assetCodes["XBT"],
-				counter: assetCodes["GBP"],
-				watch:true
-			};
-			_do_request(request);
-			/**************/
-
-		});
-
+		/*
+		 * On each message call the relevant event handler
+		 */
 		ws.on('message', function (data, flags) {
 			var msg = JSON.parse(data);
 			console.log(msg);
@@ -56,30 +59,31 @@
 		 * Authenticates as the specified user with the given authentication cookie
 		 * and passphrase.
 		 */
-		// Coinfloor.prototype.authenticate = function (callback) {
-		// 	var packed_user_id = String.fromCharCode(0, 0, 0, 0, this.user_id >> 24 & 0xFF, this.user_id >> 16 & 0xFF, this.user_id >> 8 & 0xFF, this.user_id & 0xFF);
-		// 	var client_nonce = sr.randomBuffer(16);
-		//
-		// 	//TODO: use ECDSA library here
-		//
-		// 	//create random private key
-		// 	var privateKey = sr.randomBuffer(16);
-		// 	var ck = new CoinKey(privateKey, true); // true => compressed public key / addresses
-		//
-		// 	var msg = new Buffer("hello world!", 'utf8');
-		// 	var shaMsg = crypto.createHash('sha256').update(msg).digest();
-		// 	var signature = ecdsa.sign(shaMsg, privateKey);
-		// 	var isValid = ecdsa.verify(shaMsg, signature, ck.publicKey);
-		// 	console.log(isValid); //true
-		// 	console.log(ck);
-		//
-		// };
+		function authenticate(user_id, password, api_key, server_nonce, callback) {
+			// var packed_user_id = String.fromCharCode(0, 0, 0, 0, this.user_id >> 24 & 0xFF, this.user_id >> 16 & 0xFF, this.user_id >> 8 & 0xFF, this.user_id & 0xFF);
+			// var client_nonce = sr.randomBuffer(16);
+			//
+			// //create random private key
+			// var privateKey = sr.randomBuffer(16);
+			// var ck = new CoinKey(privateKey, true); // true => compressed public key / addresses
+			//
+			// var msg = new Buffer("hello world!", 'utf8');
+			// var shaMsg = crypto.createHash('sha256').update(msg).digest();
+			// var signature = ecdsa.sign(shaMsg, privateKey);
+			// var isValid = ecdsa.verify(shaMsg, signature, ck.publicKey);
+			// console.log(isValid); //true
+			// console.log(ck);
+
+			_do_request({
+				method: "Authenticate"
+			}, callback);
+		};
 
 		/*
 		 * Retrieves all available balances of the authenticated user.
 		 */
 		Coinfloor.prototype.getBalances = function (callback) {
-			this._do_request({
+			_do_request({
 				method: "GetBalances"
 			}, callback);
 		},
@@ -88,7 +92,7 @@
 		 * Retrieves all open orders of the authenticated user.
 		 */
 		Coinfloor.prototype.getOrders = function (callback) {
-			this._do_request({
+			_do_request({
 				method: "GetOrders"
 			}, callback);
 		};
@@ -100,7 +104,7 @@
 		 * order.
 		 */
 		Coinfloor.prototype.estimateBaseMarketOrder = function (base, counter, quantity, callback) {
-			this._do_request({
+			_do_request({
 				method: "EstimateMarketOrder",
 				base: base,
 				counter: counter,
@@ -114,7 +118,7 @@
 		 * should be positive for a buy order or negative for a sell order.
 		 */
 		Coinfloor.prototype.estimateCounterMarketOrder = function (base, counter, total, callback) {
-			this._do_request({
+			_do_request({
 				method: "EstimateMarketOrder",
 				base: base,
 				counter: counter,
@@ -129,7 +133,7 @@
 		 * be pre-multiplied by 10000.
 		 */
 		Coinfloor.prototype.placeLimitOrder = function (base, counter, quantity, price, callback) {
-			this._do_request({
+			_do_request({
 				method: "PlaceOrder",
 				base: base,
 				counter: counter,
@@ -144,7 +148,7 @@
 		 * negative for a sell order.
 		 */
 		Coinfloor.prototype.executeBaseMarketOrder = function (base, counter, quantity, callback) {
-			this._do_request({
+			_do_request({
 				method: "PlaceOrder",
 				base: "GBP",
 				counter: counter,
@@ -158,7 +162,7 @@
 		 * negative for a sell order.
 		 */
 		Coinfloor.prototype.executeCounterMarketOrder = function (base, counter, total, callback) {
-			this._do_request({
+			_do_request({
 				method: "PlaceOrder",
 				base: base,
 				counter: counter,
@@ -170,7 +174,7 @@
 		 * Cancels the specified open order.
 		 */
 		Coinfloor.prototype.cancelOrder = function (id, callback) {
-			this._do_request({
+			_do_request({
 				method: "CancelOrder",
 				id: id
 			}, callback);
@@ -181,7 +185,7 @@
 		 * in the specified asset.
 		 */
 		Coinfloor.prototype.getTradeVolume = function (asset, callback) {
-			this._do_request({
+			_do_request({
 				method: "GetTradeVolume",
 				asset: asset
 			}, callback);
@@ -192,7 +196,7 @@
 		 * order book. Subscribing to feeds does not require authentication.
 		 */
 		Coinfloor.prototype.watchOrders =  function (base, counter, watch, callback) {
-			this._do_request({
+			_do_request({
 				method: "WatchOrders",
 				base: base,
 				counter: counter,
@@ -207,56 +211,11 @@
 		Coinfloor.prototype.watchTicker = function (base, counter, watch, callback) {
 			_do_request({
 				method: "WatchTicker",
-				base: base,
-				counter: counter,
+				base: assetCodes[base],
+				counter: assetCodes[counter],
 				watch: watch
 			}, callback);
 		};
-
-		/*
-		 * A user-supplied callback that is invoked when an available balance of
-		 * the authenticated user has changed.
-		 */
-		this.onBalanceChanged = null;
-
-		/*
-		 * A user-supplied callback that is invoked when an order is opened. Only
-		 * events pertaining to the authenticated user's own orders are reported to
-		 * this callback unless the client is subscribed to the orders feed of an
-		 * order book.
-		 */
-		this.onOrderOpened = null;
-
-		/*
-		 * A user-supplied callback that is invoked when two orders are matched
-		 * (and thus a trade occurs). Only events pertaining to the authenticated
-		 * user's own orders are reported to this callback unless the client is
-		 * subscribed to the orders feed of an order book.
-		 */
-		this.onOrdersMatched = null;
-
-		/*
-		 * A user-supplied callback that is invoked when an order is closed. Only
-		 * events pertaining to the authenticated user's own orders are reported to
-		 * this callback unless the client is subscribed to the orders feed of an
-		 * order book.
-		 */
-		this.onOrderClosed = null;
-
-		/*
-		 * A user-supplied callback that is invoked when a ticker changes. Events
-		 * are reported to this callback only if the client is subscribed to the
-		 * ticker feed of an order book.
-		 */
-		this.onTickerChanged = function(msg){console.log("ticker changed");};
-
-		var eventHandlers = {
-					TickerChanged: this.onTickerChanged,
-					OrderClosed: this.onOrderClosed,
-					OrdersMatched: this.onOrdersMatched,
-					OrderOpened: this.onOrderOpened,
-					BalanceChanged: this.onBalanceChanged
-				};
 
 		return Coinfloor;
 
