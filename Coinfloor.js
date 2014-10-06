@@ -3,7 +3,7 @@
 	var ecdsa = require('ecdsa');
 	var crypto = require('crypto');
 	var sr = require('secure-random');
-	var CoinKey = require('coinkey');
+	var btoa = require('btoa');
 
 	var assetCodes = {
 		XBT: 63488,
@@ -63,34 +63,39 @@
 			console.log("server nonce = " + server_nonce);
 
 			//create ECDSA signature using curve secp224k1
-			//1. private key is generated from the password and 'packed' user id (how is this generated?)
-			//2. generate random client nonce (how many bytes?)
-			//3. public key is generated from private key
-			//4. sign message (eg. generate signature) with ecdsa, using base64 encoded server nonce, client nonce, private key and user_id
-			//5. send r and s of signatures
+			//1. private key is generated from the password and 'packed' user id
+			//2. generate random client nonce
+			//3. message is signed (eg. generate signature) with ecdsa, using base64 encoded server nonce, client nonce, private key and user_id
+			//4. send r and s of signatures
 
 			var packed_user_id = String.fromCharCode(0, 0, 0, 0, this.user_id >> 24 & 0xFF, this.user_id >> 16 & 0xFF, this.user_id >> 8 & 0xFF, this.user_id & 0xFF);
 			var client_nonce = sr.randomBuffer(16);
-			//
-			// //create random private key
-			// var privateKey = sr.randomBuffer(32);
-			// var ck = new CoinKey(privateKey, true); // true => compressed public key / addresses
-			//
-			// var msg = server_nonce;
-			// var shaMsg = crypto.createHash('sha256').update(msg).digest();
-			// var signature = ecdsa.sign(shaMsg, privateKey);
-			// var isValid = ecdsa.verify(shaMsg, signature, ck.publicKey);
-			// console.log(isValid); //true
-			// // console.log(ck);
 
-			_do_request({
-	        "tag": 1,
-	        "method": "Authenticate",
-	        "user_id": user_id,
-	        "cookie": api_key,
-	        "nonce": client_nonce,
-	        "signature": [ r, s ]
-	    }, callback);
+			//generate private key: is a SHA224 hash of the password and packed user id
+			var privateKeyInput = new Buffer(packed_user_id + password, 'utf8');
+			var privateKey = crypto.createHash('sha256').update(privateKeyInput).digest();
+
+			//hash input to signature function is a SHA224 hash of the userid, the server nonce and the client nonce
+			var msg = new Buffer(user_id + server_nonce + client_nonce, 'utf8');
+			var msgHash = crypto.createHash('sha256').update(msg).digest();
+
+			console.log(msgHash);
+
+			var signature = ecdsa.sign(msgHash, privateKey);
+
+			console.log(signature);
+
+			var request = {
+					"tag": 1,
+					"method": "Authenticate",
+					"user_id": user_id,
+					"cookie": api_key,
+					"nonce": btoa(client_nonce),
+					"signature": [ signature.r, signature.s ]
+			};
+			console.log(request);
+
+			_do_request(request, callback);
 
 		};
 

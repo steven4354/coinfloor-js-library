@@ -8,6 +8,6 @@
     "ecdsa": "",
     "crypto": "",
     "secure-random": "",
-    "coinkey": ""
+    "btoa": ""
   }
 }
