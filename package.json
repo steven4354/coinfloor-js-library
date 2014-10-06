@@ -4,10 +4,8 @@
   "version": "0.0.1",
   "description": "coinfloor Bitcoin exchange wrapper",
   "dependencies": {
-    "socket.io-client": "",
-    "ecdsa": "",
-    "crypto": "",
     "secure-random": "",
-    "btoa": ""
+    "btoa": "",
+    "buffer-dataview": ""
   }
 }
