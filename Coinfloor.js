@@ -60,39 +60,35 @@
 		 * and passphrase.
 		 */
 		function authenticate(user_id, password, api_key, server_nonce, callback) {
-			console.log("server nonce = " + server_nonce);
-
 			var packed_user_id = String.fromCharCode(0, 0, 0, 0, this.user_id >> 24 & 0xFF, this.user_id >> 16 & 0xFF, this.user_id >> 8 & 0xFF, this.user_id & 0xFF);
 			var client_nonce = sr.randomBuffer(16);
 
-			//generate private key: is a SHA224 hash of the password and packed user id
+			//generate private key: a SHA224 hash of the password and packed user id
 			var privateKeyContent = new Buffer(packed_user_id + password, 'utf8');
 			var privateKey = crypto.createHash('sha224').update(privateKeyContent).digest();
 
-			//hash input to signature function is a SHA224 hash of the userid, the server nonce and the client nonce
-			var msg = new Buffer(user_id + server_nonce + client_nonce, 'utf8');
+			//generate digest to sign with private key: a SHA224 hash of the userid, the server nonce and the client nonce
+			var msg = new Buffer(packed_user_id + server_nonce + client_nonce, 'utf8');
 			var msgDigest = crypto.createHash('sha224').update(msg).digest();
 
-			//sign the message hash with the private key using secp224k1
+			//generate signature: sign the digest with the private key
 			var signature = ecp.signECDSA(msgDigest, privateKey);
 
 			//Generate cookie: A base64­ encoded SHA­1 hash of the concatenation of the
-			//16­byte cookie secret and the 8­byte (big­endian) user identifier.
-			var cookieMsg = new Buffer(api_key + user_id);
+			//16­byte cookie secret (api key) and the 8­byte (big­endian) user identifier.
+			var cookieMsg = new Buffer(api_key + packed_user_id);
 			var cookie = crypto.createHash('sha1').update(cookieMsg).digest();
 
 			var request = {
 					"tag": 1,
 					"method": "Authenticate",
-					"user_id": user_id,
-					"cookie": api_key,
+					"user_id": packed_user_id,
+					"cookie": toBase64(cookie),
 					"nonce": btoa(client_nonce),
 					"signature": [ toBase64(signature.r), toBase64(signature.s) ]
 			};
-			console.log(request);
-
+			console.log("authentication request: " + request);
 			_do_request(request, callback);
-
 		};
 
 		function toBase64(x){
