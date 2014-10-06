@@ -46,7 +46,9 @@
 				if(handler != null){
 					handler(msg);
 				}
+
 			});
+
 		}
 
 		function _do_request(request, callback){
@@ -60,8 +62,15 @@
 		function authenticate(user_id, password, api_key, server_nonce, callback) {
 			console.log("server nonce = " + server_nonce);
 
-			// var packed_user_id = String.fromCharCode(0, 0, 0, 0, this.user_id >> 24 & 0xFF, this.user_id >> 16 & 0xFF, this.user_id >> 8 & 0xFF, this.user_id & 0xFF);
-			// var client_nonce = sr.randomBuffer(16);
+			//create ECDSA signature using curve secp224k1
+			//1. private key is generated from the password and 'packed' user id (how is this generated?)
+			//2. generate random client nonce (how many bytes?)
+			//3. public key is generated from private key
+			//4. sign message (eg. generate signature) with ecdsa, using base64 encoded server nonce, client nonce, private key and user_id
+			//5. send r and s of signatures
+
+			var packed_user_id = String.fromCharCode(0, 0, 0, 0, this.user_id >> 24 & 0xFF, this.user_id >> 16 & 0xFF, this.user_id >> 8 & 0xFF, this.user_id & 0xFF);
+			var client_nonce = sr.randomBuffer(16);
 			//
 			// //create random private key
 			// var privateKey = sr.randomBuffer(32);
@@ -73,15 +82,15 @@
 			// var isValid = ecdsa.verify(shaMsg, signature, ck.publicKey);
 			// console.log(isValid); //true
 			// // console.log(ck);
-			//
-			// _do_request({
-	    //     "tag": 1,
-	    //     "method": "Authenticate",
-	    //     "user_id": user_id,
-	    //     "cookie": api_key,
-	    //     "nonce": client_nonce,
-	    //     "signature": [ ck.x, ck.y ]
-	    // }, callback);
+
+			_do_request({
+	        "tag": 1,
+	        "method": "Authenticate",
+	        "user_id": user_id,
+	        "cookie": api_key,
+	        "nonce": client_nonce,
+	        "signature": [ r, s ]
+	    }, callback);
 
 		};
 
