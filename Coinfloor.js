@@ -2,7 +2,6 @@
 	var SocketClient = require('ws');
 	var crypto = require('crypto');
 	var sr = require('secure-random');
-	var btoa = require('btoa');
 	var ecp = require('./ecp.js');
 
 	var assetCodes = {
@@ -39,12 +38,20 @@
 
 				//if it is the welcome message then call authenticate function
 				if(String(msg.notice).indexOf("Welcome") > -1){
-					authenticate(user_id, password, api_key, msg.nonce, function(){console.log("authenticated");})
+					authenticate(user_id, password, api_key, /*msg.nonce*/ "azRzAi5rm1ry/l0drnz1vw==", function(err, res){
+						if(err){
+							throw(err);
+						} else {
+							console.log("Successfully Authenticated. Response: " + res);
+						}
+					});
 				}
 
 				var handler = eventHandlers[msg.notice];
 				if(handler != null){
 					handler(msg);
+				} else {
+					console.log("No handler function for notice: '" + msg.notice + "'");
 				}
 
 			});
@@ -59,41 +66,46 @@
 		 * Authenticates as the specified user with the given authentication cookie
 		 * and passphrase.
 		 */
-		function authenticate(user_id, password, api_key, server_nonce, callback) {
-			var packed_user_id = String.fromCharCode(0, 0, 0, 0, this.user_id >> 24 & 0xFF, this.user_id >> 16 & 0xFF, this.user_id >> 8 & 0xFF, this.user_id & 0xFF);
-			var client_nonce = sr.randomBuffer(16);
+		function authenticate(user_id, password, cookie, server_nonce, callback) {
+			var passwordBuf = new Buffer(password, 'utf8');
+			var user_idBuf = new Buffer(String.fromCharCode(0, 0, 0, 0, user_id >> 24 & 0xFF, user_id >> 16 & 0xFF, user_id >> 8 & 0xFF, user_id & 0xFF));
 
-			//generate private key: a SHA224 hash of the password and packed user id
-			var privateKeyContent = new Buffer(packed_user_id + password, 'utf8');
-			var privateKey = crypto.createHash('sha224').update(privateKeyContent).digest();
+			var server_nonceBuf = new Buffer(server_nonce, 'base64');
+			var client_nonceBuf = new Buffer("8IyYyvH9gujOqYJdv/BP0A==", 'base64'); //sr.randomBuffer(16);
 
 			//generate digest to sign with private key: a SHA224 hash of the userid, the server nonce and the client nonce
-			var msg = new Buffer(packed_user_id + server_nonce + client_nonce, 'utf8');
+			var msg = Buffer.concat([user_idBuf, server_nonceBuf, client_nonceBuf]);
 			var msgDigest = crypto.createHash('sha224').update(msg).digest();
 
-			//generate signature: sign the digest with the private key
+			//generate private key: a SHA224 hash of the password and packed user id
+			var privateKeySeed = Buffer.concat([user_idBuf, passwordBuf]);
+			var privateKey = crypto.createHash('sha224').update(privateKeySeed).digest();
+
+			console.log('msg to sign: ' + msg.toString('hex'));
+			console.log('private key: ' + privateKey.toString('hex'));
+
+			// generate signature: sign the digest with the private key
 			var signature = ecp.signECDSA(msgDigest, privateKey);
 
-			//Generate cookie: A base64­ encoded SHA­1 hash of the concatenation of the
-			//16­byte cookie secret (api key) and the 8­byte (big­endian) user identifier.
-			var cookieMsg = new Buffer(api_key + packed_user_id);
-			var cookie = crypto.createHash('sha1').update(cookieMsg).digest();
+			var r = new Buffer(signature.r);
+			var s = new Buffer(signature.s);
+
+			var correctR = "P7d6nXtbKmggnnb2hyB4xXkTQNWYmFSto6tzXg==";
+
+			console.log('actual length: ' + s.toString('base64').length);
+			console.log('required length: ' + correctR.length);
 
 			var request = {
 					"tag": 1,
 					"method": "Authenticate",
-					"user_id": packed_user_id,
-					"cookie": toBase64(cookie),
-					"nonce": btoa(client_nonce),
-					"signature": [ toBase64(signature.r), toBase64(signature.s) ]
+					"user_id": user_id,
+					"cookie": cookie,
+					"nonce": client_nonceBuf.toString('base64'),
+					"signature": [ r.toString('base64'), s.toString('base64') ]
 			};
-			console.log("authentication request: " + request);
-			_do_request(request, callback);
+			console.log(request);
+			// _do_request(request, callback);
 		};
-
-		function toBase64(x){
-			return new Buffer(x).toString('base64');
-		}
 
 		/*
 		* add a listener for a message notice, to be called when this

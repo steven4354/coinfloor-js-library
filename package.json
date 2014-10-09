@@ -5,7 +5,7 @@
   "description": "coinfloor Bitcoin exchange wrapper",
   "dependencies": {
     "secure-random": "",
-    "btoa": "",
-    "buffer-dataview": ""
+    "buffer-dataview": "",
+    "ws": ""
   }
 }
