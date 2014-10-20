@@ -9,7 +9,7 @@
 		GBP: 64032
 	};
 
-	var url = "wss://api.coinfloor.co.uk/";
+	var url = "ws://api.coinfloor.co.uk/";
 
 	var ws = new SocketClient(url);
 
@@ -21,7 +21,9 @@
 			this.password = password;
 			this.api_key = api_key;
 
-			//add authentication function to event handlers
+			/*
+			 * add authentication function to event handlers
+			 */
 			eventHandlers["Welcome"] =  function(msg){
 				console.log("Authenticating");
 				authenticate(user_id, password, api_key, msg.nonce, function(){
@@ -51,7 +53,6 @@
 						console.log("No handler function for notice: '" + msg.notice + "'");
 					}
 				}
-
 			});
 
 		}
@@ -91,7 +92,6 @@
 					"signature": [ btoa(signature.r), btoa(signature.s)]
 			};
 
-			console.log(request);
 			_do_request(request, callback);
 		};
 
