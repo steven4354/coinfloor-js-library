@@ -9,5 +9,16 @@ function onConnect(){
   coinfloor.watchTicker("XBT", "GBP", true, function(){});
 };
 
-coinfloor.addEventListener("TickerChanged", function(){console.log("ticker changed listener"); /*coinfloor.getBalances();*/});
+coinfloor.addEventListener("TickerChanged", function(){console.log("ticker changed listener");});
 // coinfloor.addEventListener("GetBalances", function(balances){console.log(balances);});
+
+sleep(3000, function(){
+  // coinfloor.getBalances();
+  // coinfloor.watchTicker("XBT", "GBP", true, function(){});
+});
+
+function sleep(millis, callback) {
+    setTimeout(function()
+            { callback(); }
+    , millis);
+}

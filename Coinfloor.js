@@ -9,7 +9,7 @@
 		GBP: 64032
 	};
 
-	var url = "ws://api.coinfloor.co.uk/";
+	var url = "wss://api.coinfloor.co.uk/";
 
 	var ws = new SocketClient(url);
 
@@ -20,6 +20,14 @@
 			this.user_id = user_id;
 			this.password = password;
 			this.api_key = api_key;
+
+			//add authentication function to event handlers
+			eventHandlers["Welcome"] =  function(msg){
+				console.log("Authenticating");
+				authenticate(user_id, password, api_key, msg.nonce, function(){
+				onConnect();
+				});
+			};
 
 			/*
 			 * set up websocket connection
@@ -33,21 +41,15 @@
 			 */
 			ws.on('message', function (data, flags) {
 				var msg = JSON.parse(data);
-				console.log(data);
-				// console.log(flags);
+				console.log(msg);
 
-				//if it is the welcome message then call authenticate function
-				if(String(msg.notice).indexOf("Welcome") > -1){
-					authenticate(user_id, password, api_key, msg.nonce, function(){
-						onConnect();
-					});
-				}
-
-				var handler = eventHandlers[msg.notice];
-				if(handler != null){
-					handler(msg);
-				} else {
-					console.log("No handler function for notice: '" + msg.notice + "'");
+				if(msg.notice != null){
+					var handler = eventHandlers[msg.notice];
+					if(handler != null){
+						handler(msg);
+					} else {
+						console.log("No handler function for notice: '" + msg.notice + "'");
+					}
 				}
 
 			});
