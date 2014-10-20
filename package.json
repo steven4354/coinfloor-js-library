@@ -6,6 +6,7 @@
   "dependencies": {
     "secure-random": "",
     "buffer-dataview": "",
-    "ws": ""
+    "ws": "",
+    "cryptopp": "0.2.3"
   }
 }
