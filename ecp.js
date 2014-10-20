@@ -39,16 +39,6 @@ function hash_string_to_mpn(string) {
 	}
 	return mpn_pack(digest);
 }
-// function hash_string_to_mpn(string) {
-// 	var hash = crypto.createHash('sha224').update(string).digest();
-// 	console.log(typeof(hash));
-// 	var digest = new Uint32Array(7);
-// 	for (var i = 0; i < 7; ++i) {
-// 		digest[i] = hash.readUInt32LE(i * 4);
-// 	}
-// 	// console.log(digest);
-// 	return mpn_pack(digest);
-// }
 
 /*
  * Packs an unsigned multi-precision integer, stored as an array of 32-bit

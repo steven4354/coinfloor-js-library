@@ -4,9 +4,9 @@
   "version": "0.0.1",
   "description": "coinfloor Bitcoin exchange wrapper",
   "dependencies": {
-    "secure-random": "",
     "buffer-dataview": "",
     "ws": "",
-    "cryptopp": "0.2.3"
+    "btoa": "",
+    "atob": ""
   }
 }
