@@ -14,6 +14,8 @@
 		64032: 100
 	}
 
+	const priceScaleFactor = 100;
+
 	var url = "ws://api.coinfloor.co.uk/";
 
 	var ws = new SocketClient(url);
