@@ -8,7 +8,7 @@ var assetCodes = {
 
 var coinfloor = new Coinfloor(credentials.coinfloorID, credentials.password, credentials.api_key, onConnect);
 
-//the onConnect function is called when sucessfully authenticated
+//the onConnect function is called when successfully authenticated
 function onConnect(){
   coinfloor.watchTicker(assetCodes["XBT"], assetCodes["GBP"], true, function(msg){console.log(msg)});
 

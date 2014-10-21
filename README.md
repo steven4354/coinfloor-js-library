@@ -1,58 +1,56 @@
-js-library
-==========
+This is a node.js wrapper for the Coinfloor websocket [API](https://github.com/coinfloor/API/blob/master/WEBSOCKET-README.md).
+It implements all the functions of the API.
+It is a simple wrapper around the API, so everything should work as documented in the Coinfloor documentation, including the scaling factors for prices and quantities.
 
-## Coinfloor's JavaScript client library
+This package was not written by the Coinfloor exchange, so please do not contact them in relation to support for this package.
 
-Coinfloor's application programming interface (API) provides our clients programmatic access to control aspects of their accounts and to place orders on the Coinfloor trading platform. The JavaScript client library exposes the Coinfloor API to your JavaScript application.
+### Install
 
-### Invocation model
-
-Each API method accepts a callback function object that will be invoked when the result of the method is available. The callback function receives the reply object exactly as received from the server, so it should check the `error_code` field in the message and act accordingly.
+`npm install coinfloor`
 
 ### Example
 
-Please take a look at our [example client][], which implements a stop-loss bot using this JavaScript client library. When the market price reaches a specified threshold, the bot will execute a market order to sell a specified quantity of XBT. Feel free to let us know if you are having any issues or if you have any improvements for us to make.
+```js
+var Coinfloor = require('../Coinfloor.js');
 
-[example client]: http://coinfloor.co.uk/beta/js-library/stop_loss.html
+var coinfloor = new Coinfloor(userID, password, api_key, onConnect);
 
+//the onConnect function is called when successfully authenticated
+function onConnect(){
+  coinfloor.watchTicker(63488, 64032, true, function(msg){console.log(msg)});
 
-## Sign up to our beta
+  coinfloor.getBalances(function(msg){console.log(msg)})
+};
 
-Are you interested in getting rewarded for testing out our trade engine? Sign up to our [private beta](http://eepurl.com/MeuYr).
+coinfloor.addEventListener("TickerChanged", function(msg){
+  console.log("new ticker:");
+  console.log(msg);
+});
+```
+For a more detailed example see the example folder.
 
+## Functions
 
-## API
+`addEventListener(notice, handler)`
 
-For an explanation of our API methods and what they return, please see our [API specification](https://github.com/coinfloor/API).
+`getBalances(callback)`
 
-### Numbers and scale
+`getOrders(callback)`
 
-All quantities and prices are transmitted and received as integers with implicit scale factors. For scale information, please see [SCALE.md](https://github.com/coinfloor/API/blob/master/SCALE.md).
+`estimateBaseMarketOrder(base, counter, quantity, callback)`
 
+`estimateCounterMarketOrder(base, counter, total, callback)`
 
-## Requirements
+`placeLimitOrder(base, counter, quantity, price, callback)`
 
-Use of this library requires a JavaScript engine that supports the [WebSocket protocol](https://tools.ietf.org/html/rfc6455).
-If your application is a web application, please see this [list of supporting web browsers](http://caniuse.com/websockets).
+`executeBaseMarketOrder(base, counter, quantity, callback)`
 
+`executeCounterMarketOrder(base, counter, total, callback)`
 
-## Licence
+`cancelOrder(id, callback)`
 
-Copyright 2014 Coinfloor LTD.
+`getTradeVolume(asset, callback)`
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+`watchOrders(base, counter, watch, callback)`
 
-> http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-
-
-## Give us your feedback!
-
-We're always looking to get as much feedback as we can. We want to hear your opinion. [Contact us](http://support.coinfloor.co.uk/).
+`watchTicker(base, counter, watch, callback)`

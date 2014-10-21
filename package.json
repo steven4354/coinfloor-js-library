@@ -1,11 +1,29 @@
 {
-  "name": "coinfloor-js-library",
-  "private": false,
-  "version": "0.0.1",
-  "description": "coinfloor Bitcoin exchange wrapper",
+  "name": "coinfloor",
+  "version": "0.1.0",
+  "gypfile": true,
+  "scripts": {
+    "start": "node test.js"
+  },
+  "description": "A wrapper for the Coinfloor Bitcoin Exchange websocket API",
+  "main": "coinfloor.js",
+  "keywords": [
+    "coinfloor",
+    "bitcoin",
+    "cryptocurrency",
+    "exchange",
+    "websocket"
+  ],
+  "author": {
+    "name": "Rory Greig",
+    "email": "rorygreig@gmail.com"},
   "dependencies": {
     "ws": "",
     "btoa": "",
     "atob": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/rorygreig/coinfloor-js-library.git"
   }
 }
