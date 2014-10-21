@@ -13,4 +13,14 @@ function onConnect(){
 coinfloor.addEventListener("TickerChanged", function(msg){
   console.log("new ticker:");
   console.log(msg);
+  coinfloor.getBalances(function(msg){
+    console.log("balance received:");
+    console.log(msg);
+    console.log('\n');
+  });
+  coinfloor.getOrders(function(msg){
+    console.log("orders:");
+    console.log(msg);
+    console.log('\n');
+  });
 });

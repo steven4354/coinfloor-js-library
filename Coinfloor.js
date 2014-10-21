@@ -14,7 +14,7 @@
 	var ws = new SocketClient(url);
 
 	var _event_handlers = Object();
-	var _tag = 0;
+	var _tag = 1;
 	var _result_handlers = Object();
 	var _idle_ping_timer_id = null;
 
@@ -23,7 +23,6 @@
 			this.user_id = user_id;
 			this.password = password;
 			this.api_key = api_key;
-			this._tag = 0;
 
 			/*
 			 * add authentication function to event handlers
@@ -52,8 +51,8 @@
 				}
 
 				//call result handler function based on tag
-				if(msg.tag != undefined){
-					handleResult(msg.tag);
+				if(msg.tag !== undefined){
+					handleResult(msg);
 				}
 
 				//call event handler function if this is a notification
@@ -67,10 +66,11 @@
 			console.log("Sending Request:")
 			console.log(request);
 			console.log('\n');
-			var tag = 1;//request.tag = this._tag++;
+			var tag = request.tag;
 			ws.send(JSON.stringify(request), function(err){ if(err) throw(err); });
-			_result_handlers[1] = callback;
+			_result_handlers[tag] = callback;
 			_reset_idle_ping_timer();
+			_tag++;
 		};
 
 		function _reset_idle_ping_timer() {
@@ -91,12 +91,12 @@
 			}
 		}
 
-		function handleResult(tag){
-			if(typeof(_result_handlers[tag]) === "function"){
-				_result_handlers[tag]();
-				_result_handlers[tag] = "";
+		function handleResult(msg){
+			if(typeof(_result_handlers[msg.tag]) === "function"){
+				_result_handlers[msg.tag](msg);
+				delete _result_handlers[msg.tag];
 			} else {
-				console.log("no result handler for tag: '" + tag + "'");
+				console.log("no result handler for tag: '" + msg.tag + "'");
 			}
 		}
 
@@ -123,7 +123,7 @@
 			var signature = ecp.signECDSA(msg, privateKeySeed);
 
 			var request = {
-				  "tag": 1,
+				  "tag": _tag,
 					"method": "Authenticate",
 					"user_id": Number(user_id),
 					"cookie": cookie,
@@ -147,6 +147,7 @@
 		 */
 		Coinfloor.prototype.getBalances = function (callback) {
 			_do_request({
+				tag: _tag,
 				method: "GetBalances"
 			}, callback);
 		},
@@ -156,6 +157,7 @@
 		 */
 		Coinfloor.prototype.getOrders = function (callback) {
 			_do_request({
+				tag: _tag,
 				method: "GetOrders"
 			}, callback);
 		};
@@ -168,6 +170,7 @@
 		 */
 		Coinfloor.prototype.estimateBaseMarketOrder = function (base, counter, quantity, callback) {
 			_do_request({
+				tag: _tag,
 				method: "EstimateMarketOrder",
 				base: base,
 				counter: counter,
@@ -182,6 +185,7 @@
 		 */
 		Coinfloor.prototype.estimateCounterMarketOrder = function (base, counter, total, callback) {
 			_do_request({
+				tag: _tag,
 				method: "EstimateMarketOrder",
 				base: base,
 				counter: counter,
@@ -197,6 +201,7 @@
 		 */
 		Coinfloor.prototype.placeLimitOrder = function (base, counter, quantity, price, callback) {
 			_do_request({
+				tag: _tag,
 				method: "PlaceOrder",
 				base: base,
 				counter: counter,
@@ -212,6 +217,7 @@
 		 */
 		Coinfloor.prototype.executeBaseMarketOrder = function (base, counter, quantity, callback) {
 			_do_request({
+				tag: _tag,
 				method: "PlaceOrder",
 				base: "GBP",
 				counter: counter,
@@ -226,6 +232,7 @@
 		 */
 		Coinfloor.prototype.executeCounterMarketOrder = function (base, counter, total, callback) {
 			_do_request({
+				tag: _tag,
 				method: "PlaceOrder",
 				base: base,
 				counter: counter,
@@ -238,6 +245,7 @@
 		 */
 		Coinfloor.prototype.cancelOrder = function (id, callback) {
 			_do_request({
+				tag: _tag,
 				method: "CancelOrder",
 				id: id
 			}, callback);
@@ -249,6 +257,7 @@
 		 */
 		Coinfloor.prototype.getTradeVolume = function (asset, callback) {
 			_do_request({
+				tag: _tag,
 				method: "GetTradeVolume",
 				asset: asset
 			}, callback);
@@ -260,6 +269,7 @@
 		 */
 		Coinfloor.prototype.watchOrders =  function (base, counter, watch, callback) {
 			_do_request({
+				tag: _tag,
 				method: "WatchOrders",
 				base: base,
 				counter: counter,
@@ -273,6 +283,7 @@
 		 */
 		Coinfloor.prototype.watchTicker = function (base, counter, watch, callback) {
 			_do_request({
+				tag: _tag,
 				method: "WatchTicker",
 				base: assetCodes[base],
 				counter: assetCodes[counter],
