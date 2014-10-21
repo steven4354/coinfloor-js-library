@@ -4,18 +4,6 @@
 	var btoa = require('btoa');
 	var atob = require('atob');
 
-	var assetCodes = {
-		XBT: 63488,
-		GBP: 64032
-	};
-
-	var scaleFactors = {
-		63488: 10000,
-		64032: 100
-	}
-
-	const priceScaleFactor = 100;
-
 	var url = "ws://api.coinfloor.co.uk/";
 
 	var ws = new SocketClient(url);
@@ -155,19 +143,7 @@
 		/*
 		 * Retrieves all available balances of the authenticated user.
 		 */
-		Coinfloor.prototype.getBalances = function (inputCallback) {
-			//create callback which scales outputs
-			var callback = function(msg){
-				if(msg.error_code == 0){
-					msg.balances.forEach(function(element){
-						if(scaleFactors[element.asset] !== undefined){
-							element.balance /= scaleFactors[element.asset];
-						}
-					});
-				};
-				inputCallback(msg);
-			};
-
+		Coinfloor.prototype.getBalances = function (callback) {
 			_do_request({
 				tag: _tag,
 				method: "GetBalances"
@@ -190,26 +166,13 @@
 		 * quantity should be positive for a buy order or negative for a sell
 		 * order.
 		 */
-		Coinfloor.prototype.estimateBaseMarketOrder = function (base, counter, quantity, inputCallback) {
-			//create callback which scales outputs
-			var callback = function(msg){
-				if(msg.error_code == 0){
-					if(scaleFactors[assetCodes[base]] !== undefined){
-							msg.quantity /= scaleFactors[assetCodes[base]];
-						}
-					if(scaleFactors[assetCodes[base]] !== undefined){
-							msg.total /= scaleFactors[assetCodes[counter]];
-						}
-				}
-				inputCallback(msg);
-			};
-
+		Coinfloor.prototype.estimateBaseMarketOrder = function (base, counter, quantity, callback) {
 			_do_request({
 				tag: _tag,
 				method: "EstimateMarketOrder",
-				base: assetCodes[base],
-				counter: assetCodes[counter],
-				quantity: quantity*scaleFactors[assetCodes[base]]
+				base: base,
+				counter: counter,
+				quantity: quantity
 			}, callback);
 		};
 
@@ -222,8 +185,8 @@
 			_do_request({
 				tag: _tag,
 				method: "EstimateMarketOrder",
-				base: assetCodes[base],
-				counter: assetCodes[counter],
+				base: base,
+				counter: counter,
 				total: total
 			}, callback);
 		};
@@ -238,9 +201,9 @@
 			_do_request({
 				tag: _tag,
 				method: "PlaceOrder",
-				base: assetCodes[base],
-				counter: assetCodes[counter],
-				quantity: quantity*scaleFactors[base],
+				base: base,
+				counter: counter,
+				quantity: quantity,
 				price: price
 			}, callback);
 		};
@@ -254,9 +217,9 @@
 			_do_request({
 				tag: _tag,
 				method: "PlaceOrder",
-				base: assetCodes[base],
-				counter: assetCodes[counter],
-				quantity: quantity*scaleFactors[base]
+				base: base,
+				counter: counter,
+				quantity: quantity
 			}, callback);
 		};
 
@@ -269,8 +232,8 @@
 			_do_request({
 				tag: _tag,
 				method: "PlaceOrder",
-				base: assetCodes[base],
-				counter: assetCodes[counter],
+				base: base,
+				counter: counter,
 				total: total
 			}, callback);
 		},
@@ -294,7 +257,7 @@
 			_do_request({
 				tag: _tag,
 				method: "GetTradeVolume",
-				asset: assetCodes[asset]
+				asset: asset
 			}, callback);
 		};
 
@@ -306,8 +269,8 @@
 			_do_request({
 				tag: _tag,
 				method: "WatchOrders",
-				base: assetCodes[base],
-				counter: assetCodes[counter],
+				base: base,
+				counter: counter,
 				watch: watch
 			}, callback);
 		};
@@ -320,8 +283,8 @@
 			_do_request({
 				tag: _tag,
 				method: "WatchTicker",
-				base: assetCodes[base],
-				counter: assetCodes[counter],
+				base: base,
+				counter: counter,
 				watch: watch
 			}, callback);
 		};
