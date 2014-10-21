@@ -6,7 +6,7 @@
     "start": "node test.js"
   },
   "description": "A wrapper for the Coinfloor Bitcoin Exchange websocket API",
-  "main": "coinfloor.js",
+  "main": "Coinfloor.js",
   "keywords": [
     "coinfloor",
     "bitcoin",
