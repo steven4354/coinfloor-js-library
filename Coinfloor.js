@@ -9,6 +9,11 @@
 		GBP: 64032
 	};
 
+	var scaleFactors = {
+		63488: 10000,
+		64032: 100
+	}
+
 	var url = "ws://api.coinfloor.co.uk/";
 
 	var ws = new SocketClient(url);
@@ -30,7 +35,8 @@
 			_event_handlers["Welcome"] =  function(msg){
 				console.log("Authenticating");
 				authenticate(user_id, password, api_key, msg.nonce, function(){
-				onConnect();
+					if(msg.error_code == 0) console.log("Succesfully authenticated");
+					onConnect();
 				});
 			};
 
@@ -79,6 +85,7 @@
 				clearTimeout(_idle_ping_timer_id);
 			}
 			_idle_ping_timer_id = setTimeout(function () {
+				console.log("sending ping request to keep connection open");
 				_do_request({ }, function () { });
 			}, 45000);
 		};
@@ -88,7 +95,7 @@
 			if(handler != null){
 				handler(msg);
 			} else {
-				console.log("No handler function for notice: '" + msg.notice + "'");
+				console.log("No handler function for event: '" + msg.notice + "'");
 			}
 		}
 
@@ -97,7 +104,7 @@
 				_result_handlers[msg.tag](msg);
 				delete _result_handlers[msg.tag];
 			} else {
-				console.log("no result handler for tag: '" + msg.tag + "'");
+				console.log("no handler for result: '" + msg.tag + "'");
 			}
 		}
 
@@ -146,7 +153,19 @@
 		/*
 		 * Retrieves all available balances of the authenticated user.
 		 */
-		Coinfloor.prototype.getBalances = function (callback) {
+		Coinfloor.prototype.getBalances = function (inputCallback) {
+			//create callback which scales outputs
+			var callback = function(msg){
+				if(msg.error_code == 0){
+					msg.balances.forEach(function(element){
+						if(scaleFactors[element.asset] !== undefined){
+							element.balance /= scaleFactors[element.asset];
+						}
+					});
+				};
+				inputCallback(msg);
+			};
+
 			_do_request({
 				tag: _tag,
 				method: "GetBalances"
@@ -169,13 +188,26 @@
 		 * quantity should be positive for a buy order or negative for a sell
 		 * order.
 		 */
-		Coinfloor.prototype.estimateBaseMarketOrder = function (base, counter, quantity, callback) {
+		Coinfloor.prototype.estimateBaseMarketOrder = function (base, counter, quantity, inputCallback) {
+			//create callback which scales outputs
+			var callback = function(msg){
+				if(msg.error_code == 0){
+					if(scaleFactors[assetCodes[base]] !== undefined){
+							msg.quantity /= scaleFactors[assetCodes[base]];
+						}
+					if(scaleFactors[assetCodes[base]] !== undefined){
+							msg.total /= scaleFactors[assetCodes[counter]];
+						}
+				}
+				inputCallback(msg);
+			};
+
 			_do_request({
 				tag: _tag,
 				method: "EstimateMarketOrder",
 				base: assetCodes[base],
 				counter: assetCodes[counter],
-				quantity: quantity
+				quantity: quantity*scaleFactors[assetCodes[base]]
 			}, callback);
 		};
 
@@ -206,7 +238,7 @@
 				method: "PlaceOrder",
 				base: assetCodes[base],
 				counter: assetCodes[counter],
-				quantity: quantity,
+				quantity: quantity*scaleFactors[base],
 				price: price
 			}, callback);
 		};
@@ -222,7 +254,7 @@
 				method: "PlaceOrder",
 				base: assetCodes[base],
 				counter: assetCodes[counter],
-				quantity: quantity
+				quantity: quantity*scaleFactors[base]
 			}, callback);
 		};
 
