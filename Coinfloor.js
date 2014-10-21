@@ -47,7 +47,8 @@
 			ws.on('message', function (data, flags) {
 				var msg = JSON.parse(data);
 				if(msg.error_code !== undefined && msg.error_code > 0){
-					console.log('error: ' + msg.error_msg);
+					console.log('error: ');
+					console.log( msg );
 				}
 
 				//call result handler function based on tag
@@ -56,7 +57,7 @@
 				}
 
 				//call event handler function if this is a notification
-				if(msg.notice != undefined){
+				if(msg.notice !== undefined){
 					handleNotification(msg);
 				}
 			});
@@ -172,8 +173,8 @@
 			_do_request({
 				tag: _tag,
 				method: "EstimateMarketOrder",
-				base: base,
-				counter: counter,
+				base: assetCodes[base],
+				counter: assetCodes[counter],
 				quantity: quantity
 			}, callback);
 		};
@@ -187,8 +188,8 @@
 			_do_request({
 				tag: _tag,
 				method: "EstimateMarketOrder",
-				base: base,
-				counter: counter,
+				base: assetCodes[base],
+				counter: assetCodes[counter],
 				total: total
 			}, callback);
 		};
@@ -203,8 +204,8 @@
 			_do_request({
 				tag: _tag,
 				method: "PlaceOrder",
-				base: base,
-				counter: counter,
+				base: assetCodes[base],
+				counter: assetCodes[counter],
 				quantity: quantity,
 				price: price
 			}, callback);
@@ -219,8 +220,8 @@
 			_do_request({
 				tag: _tag,
 				method: "PlaceOrder",
-				base: "GBP",
-				counter: counter,
+				base: assetCodes[base],
+				counter: assetCodes[counter],
 				quantity: quantity
 			}, callback);
 		};
@@ -234,8 +235,8 @@
 			_do_request({
 				tag: _tag,
 				method: "PlaceOrder",
-				base: base,
-				counter: counter,
+				base: assetCodes[base],
+				counter: assetCodes[counter],
 				total: total
 			}, callback);
 		},
@@ -259,7 +260,7 @@
 			_do_request({
 				tag: _tag,
 				method: "GetTradeVolume",
-				asset: asset
+				asset: assetCodes[asset]
 			}, callback);
 		};
 
@@ -271,8 +272,8 @@
 			_do_request({
 				tag: _tag,
 				method: "WatchOrders",
-				base: base,
-				counter: counter,
+				base: assetCodes[base],
+				counter: assetCodes[counter],
 				watch: watch
 			}, callback);
 		};
