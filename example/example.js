@@ -20,6 +20,5 @@ function onConnect(){
 };
 
 coinfloor.addEventListener("TickerChanged", function(msg){
-  console.log("new ticker:");
   console.log(msg);
 });
