@@ -1,6 +1,7 @@
 This is a node.js wrapper for the Coinfloor websocket [API](https://github.com/coinfloor/API/blob/master/WEBSOCKET-README.md).
+
 It implements all the functions of the API.
-It is a simple wrapper around the API, so everything should work as documented in the Coinfloor documentation, including the scaling factors for prices and quantities.
+It is a simple wrapper, so everything should work as documented in the Coinfloor documentation, including the scaling factors for prices and quantities.
 
 This package was not written by the Coinfloor exchange, so please do not contact them in relation to support for this package.
 
