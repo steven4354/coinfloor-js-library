@@ -6,19 +6,11 @@ var coinfloor = new Coinfloor(credentials.coinfloorID, credentials.password, cre
 
 
 function onConnect(){
+  console.log("Successfully authenticated");
   coinfloor.watchTicker("XBT", "GBP", true, function(){});
 };
 
-coinfloor.addEventListener("TickerChanged", function(){console.log("ticker changed listener");});
-// coinfloor.addEventListener("GetBalances", function(balances){console.log(balances);});
-
-sleep(3000, function(){
-  // coinfloor.getBalances();
-  // coinfloor.watchTicker("XBT", "GBP", true, function(){});
+coinfloor.addEventListener("TickerChanged", function(msg){
+  console.log("new ticker:");
+  console.log(msg);
 });
-
-function sleep(millis, callback) {
-    setTimeout(function()
-            { callback(); }
-    , millis);
-}

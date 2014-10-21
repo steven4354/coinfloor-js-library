@@ -13,18 +13,22 @@
 
 	var ws = new SocketClient(url);
 
-	var eventHandlers = Object();
+	var _event_handlers = Object();
+	var _tag = 0;
+	var _result_handlers = Object();
+	var _idle_ping_timer_id = null;
 
 	module.exports = Coinfloor = (function(){
 		function Coinfloor(user_id, password, api_key, onConnect){
 			this.user_id = user_id;
 			this.password = password;
 			this.api_key = api_key;
+			this._tag = 0;
 
 			/*
 			 * add authentication function to event handlers
 			 */
-			eventHandlers["Welcome"] =  function(msg){
+			_event_handlers["Welcome"] =  function(msg){
 				console.log("Authenticating");
 				authenticate(user_id, password, api_key, msg.nonce, function(){
 				onConnect();
@@ -43,23 +47,58 @@
 			 */
 			ws.on('message', function (data, flags) {
 				var msg = JSON.parse(data);
-				console.log(msg);
+				if(msg.error_code !== undefined && msg.error_code > 0){
+					console.log('error: ' + msg.error_msg);
+				}
 
-				if(msg.notice != null){
-					var handler = eventHandlers[msg.notice];
-					if(handler != null){
-						handler(msg);
-					} else {
-						console.log("No handler function for notice: '" + msg.notice + "'");
-					}
+				//call result handler function based on tag
+				if(msg.tag != undefined){
+					handleResult(msg.tag);
+				}
+
+				//call event handler function if this is a notification
+				if(msg.notice != undefined){
+					handleNotification(msg);
 				}
 			});
-
 		}
 
 		function _do_request(request, callback){
-			ws.send(JSON.stringify(request), callback);
+			console.log("Sending Request:")
+			console.log(request);
+			console.log('\n');
+			var tag = 1;//request.tag = this._tag++;
+			ws.send(JSON.stringify(request), function(err){ if(err) throw(err); });
+			_result_handlers[1] = callback;
+			_reset_idle_ping_timer();
 		};
+
+		function _reset_idle_ping_timer() {
+			if (_idle_ping_timer_id) {
+				clearTimeout(_idle_ping_timer_id);
+			}
+			_idle_ping_timer_id = setTimeout(function () {
+				_do_request({ }, function () { });
+			}, 45000);
+		};
+
+		function handleNotification(msg){
+			var handler = _event_handlers[msg.notice];
+			if(handler != null){
+				handler(msg);
+			} else {
+				console.log("No handler function for notice: '" + msg.notice + "'");
+			}
+		}
+
+		function handleResult(tag){
+			if(typeof(_result_handlers[tag]) === "function"){
+				_result_handlers[tag]();
+				_result_handlers[tag] = "";
+			} else {
+				console.log("no result handler for tag: '" + tag + "'");
+			}
+		}
 
 		/*
 		 * Authenticates as the specified user with the given authentication cookie
@@ -84,7 +123,7 @@
 			var signature = ecp.signECDSA(msg, privateKeySeed);
 
 			var request = {
-					"tag": 1,
+				  "tag": 1,
 					"method": "Authenticate",
 					"user_id": Number(user_id),
 					"cookie": cookie,
@@ -100,7 +139,7 @@
 		* message is received
 		*/
 		Coinfloor.prototype.addEventListener = function(notice, handler){
-			eventHandlers[notice] = handler;
+			_event_handlers[notice] = handler;
 		}
 
 		/*
