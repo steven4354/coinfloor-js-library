@@ -1,6 +1,6 @@
 {
   "name": "coinfloor",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "gypfile": true,
   "scripts": {
     "start": "node test.js"
