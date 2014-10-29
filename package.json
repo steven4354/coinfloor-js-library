@@ -6,9 +6,6 @@
     "start": "node test.js"
   },
   "description": "A wrapper for the Coinfloor Bitcoin Exchange websocket API",
-  "bin": {
-    "coinfloor": "./bin/coinfloor"
-  },
   "main": "Coinfloor.js",
   "keywords": [
     "coinfloor",
@@ -19,7 +16,8 @@
   ],
   "author": {
     "name": "Rory Greig",
-    "email": "rorygreig@gmail.com"},
+    "email": "rorygreig@gmail.com"
+  },
   "dependencies": {
     "ws": "",
     "btoa": "",
