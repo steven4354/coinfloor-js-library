@@ -42,27 +42,29 @@
 			 */
 			ws.on('message', function (data, flags) {
 				var msg = JSON.parse(data);
-				if(msg.error_code !== undefined && msg.error_code > 0){
-					console.log('error: ');
-					console.log( msg );
-				}
+				if(msg !== undefined){
+					console.log("\nReceived Message:")
+					if(msg.error_code !== undefined && msg.error_code > 0){
+						console.log('error: ');
+						console.log( msg );
+					}
 
-				//call result handler function based on tag
-				if(msg.tag !== undefined){
-					handleResult(msg);
-				}
+					//call result handler function based on tag
+					if(msg.tag !== undefined){
+						handleResult(msg);
+					}
 
-				//call event handler function if this is a notification
-				if(msg.notice !== undefined){
-					handleNotification(msg);
+					//call event handler function if this is a notification
+					if(msg.notice !== undefined){
+						handleNotification(msg);
+					}
 				}
 			});
 		}
 
 		function _do_request(request, callback){
-			console.log("Sending Request:")
+			console.log("\nSending Request:")
 			console.log(request);
-			console.log('\n');
 			var tag = request.tag;
 			ws.send(JSON.stringify(request), function(err){ if(err) throw(err); });
 			_result_handlers[tag] = callback;
@@ -75,14 +77,14 @@
 				clearTimeout(_idle_ping_timer_id);
 			}
 			_idle_ping_timer_id = setTimeout(function () {
-				console.log("sending ping request to keep connection open");
+				console.log("\nSending ping request to keep connection open");
 				_do_request({ }, function () { });
 			}, 45000);
 		};
 
 		function handleNotification(msg){
 			var handler = _event_handlers[msg.notice];
-			if(handler != null){
+			if(handler !== undefined){
 				handler(msg);
 			} else {
 				console.log("No handler function for event: '" + msg.notice + "'");
@@ -90,11 +92,10 @@
 		}
 
 		function handleResult(msg){
-			if(typeof(_result_handlers[msg.tag]) === "function"){
-				_result_handlers[msg.tag](msg);
+			var handler = _result_handlers[msg.tag];
+			if(handler !== undefined && typeof(handler) === "function"){
+				handler(msg);
 				delete _result_handlers[msg.tag];
-			} else {
-				console.log("no handler for result: '" + msg.tag + "'");
 			}
 		}
 
@@ -104,6 +105,8 @@
 		 */
 		function authenticate(user_id, password, cookie, server_nonce, callback) {
 			var packed_user_id = String.fromCharCode(0, 0, 0, 0, user_id >> 24 & 0xFF, user_id >> 16 & 0xFF, user_id >> 8 & 0xFF, user_id & 0xFF);
+
+			var password
 
 			//generate random client nonce
 			var client_nonce = "";
@@ -115,7 +118,7 @@
 			var msg = packed_user_id + atob(server_nonce) + client_nonce;
 
 			//generate private key content to be hashed from the password and packed user id
-			var privateKeySeed = packed_user_id + password;
+			var privateKeySeed = packed_user_id + unescape(encodeURIComponent(password));
 
 			// generate signature: sign the digest with the private key
 			var signature = ecp.signECDSA(msg, privateKeySeed);
@@ -129,7 +132,10 @@
 					"signature": [ btoa(signature.r), btoa(signature.s)]
 			};
 
-			_do_request(request, callback);
+			_do_request(request, function(result){
+				console.log("Successfully authenticated user: " + user_id);
+				callback(result);
+			});
 		};
 
 		/*
