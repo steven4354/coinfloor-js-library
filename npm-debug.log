@@ -1,0 +1,112 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'node', '/usr/local/bin/npm', 'publish' ]
+2 info using npm@2.0.0-alpha-5
+3 info using node@v0.10.29
+4 verbose node symlink /usr/local/bin/node
+5 verbose publish [ '.' ]
+6 verbose cache add [ '.', null ]
+7 verbose cache add spec="." args=[".",null]
+8 verbose cache add local package /Users/Rory/Documents/Github/coinfloor-js-library
+9 silly lockFile 3a52ce78- .
+10 verbose lock . /Users/Rory/.npm/3a52ce78-.lock
+11 verbose tar pack [ '/Users/Rory/.npm/coinfloor/0.1.1/package.tgz', '.' ]
+12 verbose tarball /Users/Rory/.npm/coinfloor/0.1.1/package.tgz
+13 verbose folder .
+14 info prepublish coinfloor@0.1.1
+15 silly lockFile 1f1177db-tar tar://.
+16 verbose lock tar://. /Users/Rory/.npm/1f1177db-tar.lock
+17 silly lockFile 41aa4cb4--npm-coinfloor-0-1-1-package-tgz tar:///Users/Rory/.npm/coinfloor/0.1.1/package.tgz
+18 verbose lock tar:///Users/Rory/.npm/coinfloor/0.1.1/package.tgz /Users/Rory/.npm/41aa4cb4--npm-coinfloor-0-1-1-package-tgz.lock
+19 silly lockFile 1f1177db-tar tar://.
+20 silly lockFile 1f1177db-tar tar://.
+21 silly lockFile 41aa4cb4--npm-coinfloor-0-1-1-package-tgz tar:///Users/Rory/.npm/coinfloor/0.1.1/package.tgz
+22 silly lockFile 41aa4cb4--npm-coinfloor-0-1-1-package-tgz tar:///Users/Rory/.npm/coinfloor/0.1.1/package.tgz
+23 silly lockFile b777ee72-Rory-npm-coinfloor-0-1-1-package /Users/Rory/.npm/coinfloor/0.1.1/package
+24 verbose lock /Users/Rory/.npm/coinfloor/0.1.1/package /Users/Rory/.npm/b777ee72-Rory-npm-coinfloor-0-1-1-package.lock
+25 silly lockFile b777ee72-Rory-npm-coinfloor-0-1-1-package /Users/Rory/.npm/coinfloor/0.1.1/package
+26 silly lockFile b777ee72-Rory-npm-coinfloor-0-1-1-package /Users/Rory/.npm/coinfloor/0.1.1/package
+27 silly lockFile 3a52ce78- .
+28 silly lockFile 3a52ce78- .
+29 silly publish { name: 'coinfloor',
+29 silly publish   version: '0.1.1',
+29 silly publish   gypfile: true,
+29 silly publish   scripts: { start: 'node test.js' },
+29 silly publish   description: 'A wrapper for the Coinfloor Bitcoin Exchange websocket API',
+29 silly publish   bin: { coinfloor: './bin/coinfloor' },
+29 silly publish   main: 'Coinfloor.js',
+29 silly publish   keywords:
+29 silly publish    [ 'coinfloor',
+29 silly publish      'bitcoin',
+29 silly publish      'cryptocurrency',
+29 silly publish      'exchange',
+29 silly publish      'websocket' ],
+29 silly publish   author: { name: 'Rory Greig', email: 'rorygreig@gmail.com' },
+29 silly publish   dependencies: { ws: '', btoa: '', atob: '' },
+29 silly publish   repository:
+29 silly publish    { type: 'git',
+29 silly publish      url: 'git://github.com/rorygreig/coinfloor-js-library.git' },
+29 silly publish   readme: 'This is a node.js wrapper for the Coinfloor websocket [API](https://github.com/coinfloor/API/blob/master/WEBSOCKET-README.md).\n\nIt implements all the functions of the API.\nIt is a simple wrapper, so everything should work as documented in the Coinfloor documentation, including the scaling factors for prices and quantities.\n\nThis package was not written by the Coinfloor exchange, so please do not contact them in relation to support for this package.\n\n### Install\n\n`npm install coinfloor`\n\n### Example\n\n```js\nvar Coinfloor = require(\'coinfloor\');\n\nvar coinfloor = new Coinfloor(userID, password, api_key, onConnect);\n\n//the onConnect function is called when successfully authenticated\nfunction onConnect(){\n  coinfloor.watchTicker(63488, 64032, true, function(msg){console.log(msg)});\n\n  coinfloor.getBalances(function(msg){console.log(msg)})\n};\n\ncoinfloor.addEventListener("TickerChanged", function(msg){\n  console.log("new ticker:");\n  console.log(msg);\n});\n```\nFor a more detailed example see the example folder.\n\n## Functions\n\n`addEventListener(notice, handler)`\n\n`getBalances(callback)`\n\n`getOrders(callback)`\n\n`estimateBaseMarketOrder(base, counter, quantity, callback)`\n\n`estimateCounterMarketOrder(base, counter, total, callback)`\n\n`placeLimitOrder(base, counter, quantity, price, callback)`\n\n`executeBaseMarketOrder(base, counter, quantity, callback)`\n\n`executeCounterMarketOrder(base, counter, total, callback)`\n\n`cancelOrder(id, callback)`\n\n`getTradeVolume(asset, callback)`\n\n`watchOrders(base, counter, watch, callback)`\n\n`watchTicker(base, counter, watch, callback)`\n',
+29 silly publish   readmeFilename: 'README.md',
+29 silly publish   gitHead: 'b402f331ed09a5501ca8b335fa3e4660d76ba2c5',
+29 silly publish   bugs: { url: 'https://github.com/rorygreig/coinfloor-js-library/issues' },
+29 silly publish   homepage: 'https://github.com/rorygreig/coinfloor-js-library',
+29 silly publish   _id: 'coinfloor@0.1.1',
+29 silly publish   _shasum: '4d4290dbc106ab2e5ae48aeb054caf819edae77e',
+29 silly publish   _from: '.' }
+30 verbose mapToRegistry name coinfloor
+31 verbose mapToRegistry uri https://registry.npmjs.org/coinfloor
+32 verbose publish registryBase https://registry.npmjs.org/
+33 verbose request where is /coinfloor
+34 verbose request registry https://registry.npmjs.org/
+35 verbose request id a16965c30a97feb0
+36 verbose request url raw /coinfloor
+37 verbose request url resolving [ 'https://registry.npmjs.org/', './coinfloor' ]
+38 verbose request url resolved https://registry.npmjs.org/coinfloor
+39 verbose request where is https://registry.npmjs.org/coinfloor
+40 verbose request setting basic auth
+41 info trying registry request attempt 1 at 12:33:29
+42 http PUT https://registry.npmjs.org/coinfloor
+43 http 500 https://registry.npmjs.org/coinfloor
+44 info retry will retry, error on last attempt: Error: pound_internal_server_error : coinfloor
+45 info trying registry request attempt 2 at 12:33:40
+46 http PUT https://registry.npmjs.org/coinfloor
+47 http 500 https://registry.npmjs.org/coinfloor
+48 info retry will retry, error on last attempt: Error: pound_internal_server_error : coinfloor
+49 info trying registry request attempt 3 at 12:34:41
+50 http PUT https://registry.npmjs.org/coinfloor
+51 http 500 https://registry.npmjs.org/coinfloor
+52 verbose headers { date: 'Wed, 29 Oct 2014 12:34:40 GMT',
+52 verbose headers   server: 'Apache',
+52 verbose headers   'content-type': 'text/html',
+52 verbose headers   expires: 'now',
+52 verbose headers   pragma: 'no-cache',
+52 verbose headers   'cache-control': 'max-age=0',
+52 verbose headers   'content-length': '111',
+52 verbose headers   'accept-ranges': 'bytes',
+52 verbose headers   via: '1.1 varnish',
+52 verbose headers   'x-served-by': 'cache-lcy1120-LCY',
+52 verbose headers   'x-cache': 'MISS',
+52 verbose headers   'x-cache-hits': '0',
+52 verbose headers   'x-timer': 'S1414586080.049060,VS0,VE287',
+52 verbose headers   connection: 'close' }
+53 error publish Failed PUT 500
+54 error Error: pound_internal_server_error : coinfloor
+54 error     at RegClient.<anonymous> (/usr/local/lib/node_modules/npm/node_modules/npm-registry-client/lib/request.js:313:14)
+54 error     at Request._callback (/usr/local/lib/node_modules/npm/node_modules/npm-registry-client/lib/request.js:251:65)
+54 error     at Request.self.callback (/usr/local/lib/node_modules/npm/node_modules/request/request.js:123:22)
+54 error     at Request.emit (events.js:98:17)
+54 error     at Request.<anonymous> (/usr/local/lib/node_modules/npm/node_modules/request/request.js:893:14)
+54 error     at Request.emit (events.js:117:20)
+54 error     at IncomingMessage.<anonymous> (/usr/local/lib/node_modules/npm/node_modules/request/request.js:844:12)
+54 error     at IncomingMessage.emit (events.js:117:20)
+54 error     at _stream_readable.js:929:16
+54 error     at process._tickCallback (node.js:419:13)
+55 error If you need help, you may report this *entire* log,
+55 error including the npm and node versions, at:
+55 error     <http://github.com/npm/npm/issues>
+56 error System Darwin 14.0.0
+57 error command "node" "/usr/local/bin/npm" "publish"
+58 error cwd /Users/Rory/Documents/Github/coinfloor-js-library
+59 error node -v v0.10.29
+60 error npm -v 2.0.0-alpha-5
+61 verbose exit [ 1, true ]
