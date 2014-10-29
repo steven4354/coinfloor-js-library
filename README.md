@@ -12,7 +12,7 @@ This package was not written by the Coinfloor exchange, so please do not contact
 ### Example
 
 ```js
-var Coinfloor = require('../Coinfloor.js');
+var Coinfloor = require('coinfloor');
 
 var coinfloor = new Coinfloor(userID, password, api_key, onConnect);
 
