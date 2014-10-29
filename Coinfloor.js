@@ -25,7 +25,6 @@
 			_event_handlers["Welcome"] =  function(msg){
 				console.log("Authenticating");
 				authenticate(user_id, password, api_key, msg.nonce, function(){
-					if(msg.error_code == 0) console.log("Succesfully authenticated");
 					onConnect();
 				});
 			};
@@ -47,16 +46,16 @@
 					if(msg.error_code !== undefined && msg.error_code > 0){
 						console.log('error: ');
 						console.log( msg );
-					}
+					} else {
+						//call result handler function based on tag
+						if(msg.tag !== undefined){
+							handleResult(msg);
+						}
 
-					//call result handler function based on tag
-					if(msg.tag !== undefined){
-						handleResult(msg);
-					}
-
-					//call event handler function if this is a notification
-					if(msg.notice !== undefined){
-						handleNotification(msg);
+						//call event handler function if this is a notification
+						if(msg.notice !== undefined){
+							handleNotification(msg);
+						}
 					}
 				}
 			});
