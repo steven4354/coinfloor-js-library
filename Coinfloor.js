@@ -1,6 +1,4 @@
-(function() {
-	// check
-	
+(function() {	
 	var SocketClient = require('ws');
 	var ecp = require('./ecp.js');
 	var btoa = require('btoa');
@@ -67,7 +65,12 @@
 			console.log("\nSending Request:")
 			console.log(request);
 			var tag = request.tag;
-			ws.send(JSON.stringify(request), function(err){ if(err) throw(err); });
+			// fix: https://stackoverflow.com/questions/35553485/does-throwing-exception-kills-thread-in-node-js
+			try {
+				ws.send(JSON.stringify(request), function(err){ if(err) throw(err); })
+			} catch (err) {
+				console.log("coinfloor-js-library err!!! msg: ", err)
+			}
 			_result_handlers[tag] = callback;
 			_reset_idle_ping_timer();
 			_tag++;
