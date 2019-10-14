@@ -1,4 +1,6 @@
 (function() {
+	// check
+	
 	var SocketClient = require('ws');
 	var ecp = require('./ecp.js');
 	var btoa = require('btoa');
