@@ -1,4 +1,4 @@
-(function() {	
+(function() {
 	var SocketClient = require('ws');
 	var ecp = require('./ecp.js');
 	var btoa = require('btoa');
@@ -19,52 +19,67 @@
 			this.password = password;
 			this.api_key = api_key;
 
-			/*
+			const startWebsocketConnection = () => {
+				/*
 			 * add authentication function to event handlers
 			 */
-			_event_handlers["Welcome"] =  function(msg){
-				console.log("Authenticating");
-				authenticate(user_id, password, api_key, msg.nonce, function(){
-					onConnect();
+				_event_handlers["Welcome"] =  function(msg){
+					console.log("Authenticating");
+					authenticate(user_id, password, api_key, msg.nonce, function(){
+						onConnect();
+					});
+				};
+
+				/*
+         * set up websocket connection
+         */
+				ws.on('open', function(data){
+					console.log('websocket connected to: ' + url);
 				});
-			};
 
-			/*
-			 * set up websocket connection
-			 */
-			ws.on('open', function(data){
-				console.log('websocket connected to: ' + url);
-			});
+				/*
+         * On each message call the relevant event handler
+         */
+				ws.on('message', function (data, flags) {
+					var msg = JSON.parse(data);
+					if(msg !== undefined){
+						console.log("\nReceived Message:")
+						if(msg.error_code !== undefined && msg.error_code > 0){
+							console.log('error: ');
+							console.log( msg );
+						} else {
+							//call result handler function based on tag
+							if(msg.tag !== undefined){
+								handleResult(msg);
+							}
 
-			/*
-			 * On each message call the relevant event handler
-			 */
-			ws.on('message', function (data, flags) {
-				var msg = JSON.parse(data);
-				if(msg !== undefined){
-					console.log("\nReceived Message:")
-					if(msg.error_code !== undefined && msg.error_code > 0){
-						console.log('error: ');
-						console.log( msg );
-					} else {
-						//call result handler function based on tag
-						if(msg.tag !== undefined){
-							handleResult(msg);
-						}
-
-						//call event handler function if this is a notification
-						if(msg.notice !== undefined){
-							handleNotification(msg);
+							//call event handler function if this is a notification
+							if(msg.notice !== undefined){
+								handleNotification(msg);
+							}
 						}
 					}
-				}
-			});
+				});
+
+				// ws.on('close')
+				// fix: https://stackoverflow.com/questions/3780511/reconnection-of-client-when-server-reboots-in-websocket
+				ws.onclose = function(){
+					// Try to reconnect in 5 seconds
+					setTimeout(function(){
+						// same as the above
+						startWebsocketConnection()
+					}, 5000);
+				};
+			}
+
+			startWebsocketConnection()
 		}
 
 		function _do_request(request, callback){
 			console.log("\nSending Request:")
 			console.log(request);
 			var tag = request.tag;
+
 			// fix: https://stackoverflow.com/questions/35553485/does-throwing-exception-kills-thread-in-node-js
 			try {
 				ws.send(JSON.stringify(request), function(err){ if(err) throw(err); })
