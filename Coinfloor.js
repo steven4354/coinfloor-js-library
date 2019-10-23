@@ -235,7 +235,8 @@
 				base: base,
 				counter: counter,
 				quantity: quantity,
-				price: price
+				price: price,
+				persist: true
 			}, callback);
 		};
 
